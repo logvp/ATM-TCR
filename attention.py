@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import aft_pytorch
 
 class Net(nn.Module):
     def __init__(self, embedding, args):
@@ -12,8 +13,8 @@ class Net(nn.Module):
         if not (args.blosum is None or args.blosum.lower() == 'none'):
             self.embedding = self.embedding.from_pretrained(torch.FloatTensor(embedding), freeze=False)
 
-        self.attn_tcr = nn.MultiheadAttention(embed_dim = self.embedding_dim, num_heads = args.heads)
-        self.attn_pep = nn.MultiheadAttention(embed_dim = self.embedding_dim, num_heads = args.heads)
+        self.attn_tcr = aft_pytorch.AFTFull(dim = self.embedding_dim, max_seqlen = args.batch_size)
+        self.attn_pep = aft_pytorch.AFTFull(dim = self.embedding_dim, max_seqlen = args.batch_size)
 
         # Dense Layer
         self.size_hidden1_dense = 2 * args.lin_size
@@ -44,8 +45,8 @@ class Net(nn.Module):
         tcr = torch.transpose(tcr, 0, 1)
 
         # Attention
-        pep, pep_attn = self.attn_pep(pep,pep,pep)
-        tcr, tcr_attn = self.attn_tcr(tcr,tcr,tcr)
+        pep = self.attn_pep(pep)
+        tcr = self.attn_tcr(tcr)
 
         pep = torch.transpose(pep, 0, 1)
         tcr = torch.transpose(tcr, 0, 1)
