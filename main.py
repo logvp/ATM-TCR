@@ -32,7 +32,7 @@ def train(model, device, train_loader, optimizer, epoch):
         loss.backward()
         optimizer.step()
 
-    if epoch % PRINT_EVERY_EPOCH == 1:
+    if epoch % PRINT_EVERY_EPOCH == 0:
         print('[TRAIN] Epoch {} Loss {:.4f}'.format(epoch, loss.item()))
 
 
