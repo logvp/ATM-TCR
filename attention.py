@@ -12,6 +12,11 @@ class Net(nn.Module):
         if not (args.blosum is None or args.blosum.lower() == 'none'):
             self.embedding = self.embedding.from_pretrained(torch.FloatTensor(embedding), freeze=False)
 
+        # Positional Embedding Layer
+        self.positional_embedding_tcr = nn.Embedding(args.max_len_tcr, self.embedding_dim)
+        self.positional_embedding_pep = nn.Embedding(args.max_len_pep, self.embedding_dim)
+
+        # Attention
         self.attn_tcr = nn.MultiheadAttention(embed_dim = self.embedding_dim, num_heads = args.heads)
         self.attn_pep = nn.MultiheadAttention(embed_dim = self.embedding_dim, num_heads = args.heads)
 
@@ -39,6 +44,12 @@ class Net(nn.Module):
         # Embedding
         pep = self.embedding(pep) # batch * len * dim (25)
         tcr = self.embedding(tcr) # batch * len * dim
+
+        # Add positionally dependent component to sequence embeddings
+        pos_pep = torch.arange(0, pep.size(1)).unsqueeze(0).expand(pep.size(0), -1)
+        pos_tcr = torch.arange(0, tcr.size(1)).unsqueeze(0).expand(tcr.size(0), -1)
+        pep += self.positional_embedding_pep(pos_pep)
+        tcr += self.positional_embedding_tcr(pos_tcr)
 
         pep = torch.transpose(pep, 0, 1)
         tcr = torch.transpose(tcr, 0, 1)
