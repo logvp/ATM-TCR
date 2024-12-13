@@ -146,7 +146,7 @@ def main():
     else:
         raise ValueError('unknown model name')
 
-    model = Net(embedding_matrix, args).to(device)
+    model = Net(embedding_matrix, device, args).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     # Create Required Directories

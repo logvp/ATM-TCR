@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 
 class Net(nn.Module):
-    def __init__(self, embedding, args):
+    def __init__(self, embedding, device, args):
         super(Net, self).__init__()
+        self.device = device
 
         # Embedding Layer
         self.num_amino = len(embedding)
@@ -46,8 +47,8 @@ class Net(nn.Module):
         tcr = self.embedding(tcr) # batch * len * dim
 
         # Add positionally dependent component to sequence embeddings
-        pos_pep = torch.arange(0, pep.size(1)).unsqueeze(0).expand(pep.size(0), -1)
-        pos_tcr = torch.arange(0, tcr.size(1)).unsqueeze(0).expand(tcr.size(0), -1)
+        pos_pep = torch.arange(0, pep.size(1), device=self.device).unsqueeze(0).expand(pep.size(0), -1)
+        pos_tcr = torch.arange(0, tcr.size(1), device=self.device).unsqueeze(0).expand(tcr.size(0), -1)
         pep += self.positional_embedding_pep(pos_pep)
         tcr += self.positional_embedding_tcr(pos_tcr)
 
